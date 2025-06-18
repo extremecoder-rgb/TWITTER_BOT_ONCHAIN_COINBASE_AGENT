@@ -12,12 +12,12 @@ import * as fs from "fs";
 
 dotenv.config();
 
-// Configure a file to persist the agent's CDP MPC Wallet Data
+
 const WALLET_DATA_FILE = "wallet_data.txt";
 
 export class BaseAIAgent {
   private agentkit: CdpAgentkit | undefined;
-  private agent: any; // ReAct agent
+  private agent: any; 
   private twitterClient: TwitterApi;
   private agentConfig: any;
   private processedTweets: Set<string> = new Set();
@@ -36,17 +36,17 @@ export class BaseAIAgent {
   async initialize() {
     let walletDataStr: string | null = null;
 
-    // Read existing wallet data if available
+   
     if (fs.existsSync(WALLET_DATA_FILE)) {
       try {
         walletDataStr = fs.readFileSync(WALLET_DATA_FILE, "utf8");
       } catch (error) {
         console.error("Error reading wallet data:", error);
-        // Continue without wallet data
+      
       }
     }
 
-    // Configure CDP Agentkit with Base Sepolia
+   
     const config = {
       networkId: "base-sepolia",
       cdpWalletData: walletDataStr || undefined,
@@ -54,17 +54,16 @@ export class BaseAIAgent {
 
     this.agentkit = await CdpAgentkit.configureWithWallet(config);
 
-    // Initialize LLM
+ 
     const llm = new ChatGoogleGenerativeAI({
       apiKey: process.env.GOOGLE_API_KEY!,
       model: "gemini-1.5-flash",
     });
 
-    // Initialize CDP tools
+
     const cdpToolkit = new CdpToolkit(this.agentkit);
     const tools = cdpToolkit.getTools();
 
-    // Add custom Twitter tool that handles both replies and new tweets
     const twitterTool = new DynamicTool({
       name: "send_tweet",
       description:
@@ -88,11 +87,10 @@ export class BaseAIAgent {
 
     tools.push(twitterTool);
 
-    // Store conversation history
+ 
     const memory = new MemorySaver();
     this.agentConfig = { configurable: { thread_id: "Base AI Agent" } };
 
-    // Create ReAct Agent
     this.agent = createReactAgent({
       llm,
       tools,
@@ -108,7 +106,7 @@ export class BaseAIAgent {
         "When replying to a tweet, formulate your response and then use the send_tweet tool with format 'REPLY:tweetId:yourResponse'.",
     });
 
-    // Save wallet data
+  
     const exportedWallet = await this.agentkit.exportWallet();
     fs.writeFileSync(WALLET_DATA_FILE, exportedWallet);
 
@@ -157,9 +155,9 @@ export class BaseAIAgent {
   }
 
   private async generateAutonomousAction(): Promise<string> {
-    // Weight the prompts - higher numbers mean more frequent selection
+  
     const weightedPrompts = [
-      // Informative content (weight: 4)
+   
       {
         prompt:
           "Share an interesting fact or insight about Base blockchain or Layer 2 solutions",
@@ -178,7 +176,7 @@ export class BaseAIAgent {
         weight: 4,
       },
 
-      // Community engagement (weight: 3)
+     
       {
         prompt: "Start a discussion about the future of DeFi or NFTs",
         weight: 3,
@@ -193,12 +191,11 @@ export class BaseAIAgent {
       },
       { prompt: "Highlight a cool feature of Base or CDP", weight: 3 },
 
-      // Project updates (weight: 2)
+    
       { prompt: "Share what you can do as an AI agent on Base", weight: 2 },
       { prompt: "Explain one of your capabilities or tools", weight: 2 },
       { prompt: "Share a success story or interesting interaction", weight: 2 },
 
-      // Rare on-chain actions (weight: 1)
       {
         prompt: "Deploy a creative meme token with an interesting concept",
         weight: 1,
@@ -209,16 +206,16 @@ export class BaseAIAgent {
       },
     ];
 
-    // Calculate total weight
+    
     const totalWeight = weightedPrompts.reduce(
       (sum, item) => sum + item.weight,
       0
     );
 
-    // Generate random number between 0 and total weight
+   
     let random = Math.random() * totalWeight;
 
-    // Find the selected prompt based on weights
+   
     for (const { prompt, weight } of weightedPrompts) {
       random -= weight;
       if (random <= 0) {
@@ -226,7 +223,7 @@ export class BaseAIAgent {
       }
     }
 
-    // Fallback to first prompt (should never happen)
+  
     return weightedPrompts[0].prompt;
   }
 
@@ -271,9 +268,9 @@ export class BaseAIAgent {
 
   private async checkMentions() {
     try {
-      // Get recent mentions using search API
+   
       const mentions = await this.twitterClient.v2.userMentionTimeline(
-        process.env.TWITTER_USER_ID!, // Your bot's user ID
+        process.env.TWITTER_USER_ID!, 
         {
           "tweet.fields": ["author_id", "referenced_tweets"],
           expansions: ["author_id"],
@@ -300,9 +297,8 @@ export class BaseAIAgent {
           );
 
           if (author) {
-            // Pass tweet ID to handleTweet
+          
             await this.handleTweet(tweet.text, author.username, tweet.id);
-            // Add small delay between processing mentions to avoid rate limits
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         }
@@ -312,7 +308,7 @@ export class BaseAIAgent {
     }
   }
 
-  // Replace startListening with pollMentions
+
   async pollMentions(interval = 1200) {
     // Check every 20 minutes
     console.log("Started polling for mentions...");

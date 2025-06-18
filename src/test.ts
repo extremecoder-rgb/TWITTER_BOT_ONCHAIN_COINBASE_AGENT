@@ -1,5 +1,4 @@
 import { TwitterApi } from "twitter-api-v2";
-// import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import * as dotenv from "dotenv";
 
@@ -13,25 +12,18 @@ async function testTwitterIntegration() {
     accessSecret: process.env.TWITTER_ACCESS_SECRET!,
   });
 
-//   const llm = new ChatAnthropic({
-//     anthropicApiKey: process.env.ANTHROPIC_API_KEY!,
-//     modelName: "claude-3-opus-20240229",
-//   });
-
   const llm = new ChatGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_API_KEY!,
     modelName: "gemini-1.5-flash",
   });
 
   try {
-    // Test 1: Post a tweet
+   
     console.log("Testing tweet posting...");
     const tweet = await client.v2.tweet(
       "Hello from Base AI Agent! 🤖 #TestTweet"
     );
     console.log("Tweet posted:", tweet.data.id);
-
-    // Test 2: Get recent mentions
     console.log("\nTesting mentions retrieval...");
     const mentions = await client.v2.userMentionTimeline(
       process.env.TWITTER_USER_ID!

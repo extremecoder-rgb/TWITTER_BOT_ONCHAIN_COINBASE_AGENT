@@ -1,4 +1,4 @@
-# Base AI Agent
+# TwiBase - an AI-powered agent that operates on the Base blockchain and interacts with users through Twitter
 
 **Author:** Subhranil Mondal
 
